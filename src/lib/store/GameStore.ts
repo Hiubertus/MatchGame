@@ -36,6 +36,7 @@ interface GameStatistics {
 interface GameHistory {
     tileCount: TileCount;
     animationType: AnimationType;
+    contentType: ContentType;
     gameMode: GameMode;
     initiallyHidden: boolean;
     matchesMade: number;
@@ -81,6 +82,8 @@ interface GameState {
     updateCurrentGameStats: (stats: Partial<GameStatistics>) => void;
     addGameToHistory: () => void;
     getFilteredGameHistory: (filters: Partial<GameHistory>) => GameHistory[];
+
+    resetGameStore: () => void;
 }
 
 type GamePersist = (
@@ -109,6 +112,31 @@ export const useGameStore = create((persist as GamePersist)((set, get) => ({
         timerInterval: null,
         gameCompleted: false,
         contentType: 'colors' as ContentType,
+
+        resetGameStore: () => {
+            localStorage.removeItem('game-storage');
+            set({
+                gameMode: 'pair',
+                tileCount: 18,
+                useFlipAnimation: true,
+                showInitialReveal: false,
+                isGameStarted: false,
+                tiles: [],
+                revealedIndices: [],
+                isCheckingMatch: false,
+                initialRevealDone: false,
+                currentGameStats: {
+                    timeSpent: 0,
+                    flippedTiles: 0,
+                    successfulMatches: 0
+                },
+                gameHistory: [],
+                startTime: null,
+                timerInterval: null,
+                gameCompleted: false,
+                contentType: 'colors' as ContentType,
+            });
+        },
 
         setGameMode: (mode) => set({gameMode: mode}),
         setTileCount: (count) => set({tileCount: count}),
@@ -281,6 +309,7 @@ export const useGameStore = create((persist as GamePersist)((set, get) => ({
 
             const gameRecord: GameHistory = {
                 tileCount: state.tileCount,
+                contentType: state.contentType,
                 animationType: state.useFlipAnimation ? 'flip' : 'fade',
                 gameMode: state.gameMode,
                 initiallyHidden: !state.showInitialReveal,

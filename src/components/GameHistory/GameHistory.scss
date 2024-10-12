@@ -1,32 +1,124 @@
 .game-history {
-  margin-top: 20px;
+  width: 100vw;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #f3f4f6;
+  padding: 60px 60px 30px 60px;
 
   h2 {
     text-align: center;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+  }
+
+  .table-container {
+    height: clamp( min(200px), 75vh, max(400px));
+    overflow: auto;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    overflow-y: hidden;
   }
 
   table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    min-width: 1024px;
+    overflow-x: auto;
+    display: block;
+    position: relative;
+    thead {
+      position: sticky;
+      top: 0;
+      background-color: #4CAF50;
+      color: white;
+      z-index: 1;
+    }
 
     th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
+      padding: 12px 15px;
       text-align: left;
     }
 
     th {
+      text-transform: uppercase;
+    }
+
+    td {
+      background-color: #fff;
+      color: #333;
+    }
+
+    tbody {
+      display: block;
+      height: clamp( min(200px), 45vh, max(360px));
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    tr {
+      display: table;
+      width: 100%;
+      table-layout: fixed;
+    }
+
+    tr:nth-child(even) td {
       background-color: #f2f2f2;
-      font-weight: bold;
     }
 
-    tr:nth-child(even) {
-      background-color: #f9f9f9;
+    tr:hover td {
+      background-color: #d1e7dd;
+      cursor: pointer;
     }
 
-    tr:hover {
-      background-color: #f5f5f5;
+  }
+  .placeholder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+
+    p {
+      font-size: 18px;
+      color: #666;
+      text-align: center;
+    }
+  }
+  .reset-button {
+    position: absolute;
+    top: 90%;
+    right: 50%;
+    transform: translateX(50%) translateY(-50%);
+    padding: 10px 20px;
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    @media(orientation: landscape) and (max-height: 640px) {
+      top: 10px;
+      transform: translateX(50%);
+    }
+
+
+    &:hover {
+      background-color: #ff3333;
+    }
+
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(255, 77, 77, 0.5);
     }
   }
 }
