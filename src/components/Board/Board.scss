@@ -59,6 +59,9 @@
   color: #333;
 }
 
+
+
+
 .memory-game {
   display: grid;
   gap: 0.5rem;
@@ -146,7 +149,9 @@
       }
     }
 
-    @each $color in ('red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'cyan', 'brown', 'gray', 'navy', 'olive') {
+    @each $color in ('red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'cyan',
+    'brown', 'gray', 'navy', 'olive', 'teal', 'magenta', 'lime', 'indigo',
+    'maroon', 'gold') {
       &--#{$color} .memory-game__tile-back {
         background-color: #{$color};
       }
@@ -157,6 +162,7 @@
       width: 100px;
       height: 100px;
     }
+
   }
 }
 
