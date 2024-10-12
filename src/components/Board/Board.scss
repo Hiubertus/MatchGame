@@ -138,6 +138,10 @@
 
     &-back {
       transform: rotateY(180deg);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2rem;
     }
 
     &--fade &-front,
@@ -171,6 +175,9 @@
     &__tile {
       width: 60px;
       height: 60px;
+      &-back {
+        font-size: 2.5rem;
+      }
     }
 
   }
@@ -178,6 +185,9 @@
     &__tile {
       width: 80px;
       height: 80px;
+      &-back {
+        font-size: 3rem;
+      }
     }
 
   }

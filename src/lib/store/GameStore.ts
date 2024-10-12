@@ -6,15 +6,23 @@ const colors = [
     'brown', 'gray', 'navy', 'olive', 'teal', 'magenta', 'lime', 'indigo',
     'maroon', 'gold'
 ] as const;
+const animalEmojis = [
+    '🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼',
+    '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔',
+    '🐧', '🐦'
+] as const;
 type Color = typeof colors[number];
+type Emoji = typeof animalEmojis[number];
+export type TileContent = Color | Emoji;
 
 export type GameMode = 'pair' | 'triplet';
 export type TileCount = 12 | 18 | 24 | 30 | 36;
 export type AnimationType = 'flip' | 'fade';
+export type ContentType = 'colors' | 'emojis';
 
 interface Tile {
     id: number;
-    color: Color;
+    content: TileContent;
     isRevealed: boolean;
     isMatched: boolean;
 }
@@ -39,10 +47,12 @@ interface GameHistory {
 interface GameState {
     gameMode: GameMode;
     tileCount: TileCount;
+    contentType: ContentType;
     useFlipAnimation: boolean;
     showInitialReveal: boolean;
     isGameStarted: boolean;
     gameCompleted: boolean;
+
 
     tiles: Tile[];
     revealedIndices: number[];
@@ -56,6 +66,7 @@ interface GameState {
     timerInterval: number | null;
     updateTimer: () => void;
 
+    setContentType: (type: ContentType) => void;
     setGameMode: (mode: GameMode) => void;
     setTileCount: (count: TileCount) => void;
     setAnimationType: (type: AnimationType) => void;
@@ -97,11 +108,13 @@ export const useGameStore = create((persist as GamePersist)((set, get) => ({
         startTime: null,
         timerInterval: null,
         gameCompleted: false,
+        contentType: 'colors' as ContentType,
 
         setGameMode: (mode) => set({gameMode: mode}),
         setTileCount: (count) => set({tileCount: count}),
         setAnimationType: (type) => set({useFlipAnimation: type === 'flip'}),
         setShowInitialReveal: (show) => set({showInitialReveal: show}),
+        setContentType: (type: ContentType) => set({ contentType: type }),
 
         startGame: () => {
             const {showInitialReveal} = get();
@@ -170,23 +183,24 @@ export const useGameStore = create((persist as GamePersist)((set, get) => ({
         },
 
         initializeGame: () => {
-            const {gameMode, tileCount, showInitialReveal} = get();
-            const gameColors = colors.slice(0, gameMode === 'pair' ? tileCount / 2 : tileCount / 3);
-            const repeatedColors = gameMode === 'pair'
-                ? [...gameColors, ...gameColors]
-                : [...gameColors, ...gameColors, ...gameColors];
+            const {gameMode, tileCount, showInitialReveal, contentType} = get();
+            const contentPool = contentType === 'colors' ? colors : animalEmojis;
+            const gameContent = contentPool.slice(0, gameMode === 'pair' ? tileCount / 2 : tileCount / 3);
+            const repeatedContent = gameMode === 'pair'
+                ? [...gameContent, ...gameContent]
+                : [...gameContent, ...gameContent, ...gameContent];
 
-            const shuffledColors = repeatedColors
+            const shuffledContent = repeatedContent
                 .sort(() => Math.random() - 0.5)
-                .map((color, index) => ({
+                .map((content, index) => ({
                     id: index,
-                    color,
+                    content,
                     isRevealed: showInitialReveal,
                     isMatched: false,
                 }));
 
             set({
-                tiles: shuffledColors,
+                tiles: shuffledContent,
                 revealedIndices: [],
                 initialRevealDone: !showInitialReveal,
                 isCheckingMatch: false
@@ -218,9 +232,9 @@ export const useGameStore = create((persist as GamePersist)((set, get) => ({
                 set({isCheckingMatch: true});
                 setTimeout(() => {
                     const {tiles} = get();
-                    const colors = newRevealedIndices.map(index => tiles[index].color);
+                    const contents = newRevealedIndices.map(index => tiles[index].content);
 
-                    if (colors.every(color => color === colors[0])) {
+                    if (contents.every(content => content === contents[0])) {
                         set((state) => ({
                             tiles: state.tiles.map((tile, i) =>
                                 newRevealedIndices.includes(i) ? {...tile, isMatched: true} : tile

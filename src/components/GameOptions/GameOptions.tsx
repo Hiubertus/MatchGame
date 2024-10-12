@@ -1,5 +1,5 @@
 import React from 'react';
-import { TileCount } from "../../lib/store/GameStore";
+import {TileCount} from "../../lib/store/GameStore";
 import "./GameOptions.scss"
 import {GameOptionsProps} from "../Game";
 
@@ -12,7 +12,9 @@ export const GameOptions: React.FC<GameOptionsProps> = ({
                                                             setTileCount,
                                                             setAnimationType,
                                                             setShowInitialReveal,
-                                                            startGame
+                                                            startGame,
+                                                            setContentType,
+                                                            contentType
                                                         }) => {
     return (
         <div className="game-options">
@@ -67,6 +69,20 @@ export const GameOptions: React.FC<GameOptionsProps> = ({
                     className={!showInitialReveal ? 'active' : ''}
                 >
                     Hide Initial
+                </button>
+            </div>
+            <div>
+                <button
+                    onClick={() => setContentType('colors')}
+                    className={contentType === 'colors' ? 'active' : ''}
+                >
+                    Colors
+                </button>
+                <button
+                    onClick={() => setContentType('emojis')}
+                    className={contentType === 'emojis' ? 'active' : ''}
+                >
+                    Emojis
                 </button>
             </div>
             <button onClick={startGame} className="start-game-button">

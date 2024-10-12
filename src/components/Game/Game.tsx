@@ -2,7 +2,7 @@ import React from 'react';
 import { GameOptions } from '../GameOptions';
 import { Board } from '../Board';
 import './Game.scss';
-import { useGameStore } from "../../lib/store/GameStore";
+import {ContentType, TileContent, useGameStore} from "../../lib/store/GameStore";
 import { GameMode, TileCount, AnimationType } from "../../lib/store/GameStore";
 // import {GameHistory} from "../GameHistory";
 
@@ -16,12 +16,14 @@ export interface GameOptionsProps {
     setAnimationType: (type: AnimationType) => void;
     setShowInitialReveal: (show: boolean) => void;
     startGame: () => void;
+    contentType: ContentType;
+    setContentType: (type: ContentType) => void;
 }
 
 export interface BoardProps {
     tiles: Array<{
         id: number;
-        color: string;
+        content: TileContent;
         isRevealed: boolean;
         isMatched: boolean;
     }>;
@@ -29,6 +31,7 @@ export interface BoardProps {
     useFlipAnimation: boolean;
     handleTileClick: (index: number) => void;
     endGame: () => void;
+    contentType: ContentType;
     currentGameStats: {
         timeSpent: number;
         flippedTiles: number;
@@ -52,6 +55,8 @@ export const Game: React.FC = () => {
         handleTileClick,
         endGame,
         currentGameStats,
+        setContentType,
+        contentType
     } = useGameStore();
 
     const gameOptionsProps: GameOptionsProps = {
@@ -59,17 +64,21 @@ export const Game: React.FC = () => {
         tileCount,
         useFlipAnimation,
         showInitialReveal,
+        contentType,
         setGameMode,
         setTileCount,
         setAnimationType,
         setShowInitialReveal,
+        setContentType,
         startGame,
+
     };
 
     const boardProps: BoardProps = {
         tiles,
         tileCount,
         useFlipAnimation,
+        contentType,
         handleTileClick,
         endGame,
         currentGameStats,
@@ -80,7 +89,6 @@ export const Game: React.FC = () => {
             {!isGameStarted ? (
                 <>
                     <GameOptions {...gameOptionsProps} />
-                    {/*<GameHistory/>*/}
                 </>
             ) : (
                 <Board {...boardProps} />

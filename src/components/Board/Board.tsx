@@ -8,7 +8,8 @@ export const Board: React.FC<BoardProps> = ({
                                                 useFlipAnimation,
                                                 handleTileClick,
                                                 endGame,
-                                                currentGameStats
+                                                currentGameStats,
+                                                contentType
                                             }) => {
     const formatTime = (seconds: number) => {
         const minutes = Math.floor(seconds / 60);
@@ -43,13 +44,15 @@ export const Board: React.FC<BoardProps> = ({
                         key={tile.id}
                         className={`memory-game__tile 
                             ${(tile.isRevealed || tile.isMatched) ? 'memory-game__tile--revealed' : ''} 
-                            memory-game__tile--${tile.color}
+                            ${contentType === 'colors' ? `memory-game__tile--${tile.content}` : ''}
                             ${useFlipAnimation ? 'memory-game__tile--flip' : 'memory-game__tile--fade'}`}
                         onClick={() => handleTileClick(index)}
                     >
                         <div className="memory-game__tile-inner">
                             <div className="memory-game__tile-front"></div>
-                            <div className="memory-game__tile-back"></div>
+                            <div className="memory-game__tile-back">
+                                {contentType === 'emojis' && tile.content}
+                            </div>
                         </div>
                     </div>
                 ))}
