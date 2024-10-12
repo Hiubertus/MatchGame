@@ -53,7 +53,7 @@ interface GameState {
     gameHistory: GameHistory[];
 
     startTime: number | null;
-    timerInterval: NodeJS.Timeout | null;
+    timerInterval: number | null;
     updateTimer: () => void;
 
     setGameMode: (mode: GameMode) => void;
@@ -119,12 +119,12 @@ export const useGameStore = create((persist as GamePersist)((set, get) => ({
             if (showInitialReveal) {
                 setTimeout(() => {
                     set({ startTime: Date.now() });
-                    const interval = setInterval(get().updateTimer, 1000);
+                    const interval = setInterval(get().updateTimer, 1000) as unknown as number;
                     set({ timerInterval: interval });
                 }, 3000);
             } else {
                 set({ startTime: Date.now() });
-                const interval = setInterval(get().updateTimer, 1000);
+                const interval = setInterval(get().updateTimer, 1000) as unknown as number;
                 set({ timerInterval: interval });
             }
         },
