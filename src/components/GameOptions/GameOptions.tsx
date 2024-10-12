@@ -1,21 +1,10 @@
 import React from 'react';
-import {AnimationType, GameMode, TileCount} from "../../lib/store/GameOptionsStore.ts";
+import { TileCount } from "../../lib/store/GameStore";
 import "./GameOptions.scss"
+import {GameOptionsProps} from "../Game";
 
 
-interface OptionsProps {
-    gameMode: GameMode;
-    tileCount: TileCount;
-    useFlipAnimation: boolean;
-    showInitialReveal: boolean;
-    setGameMode: (mode: GameMode) => void;
-    setTileCount: (count: TileCount) => void;
-    setAnimationType: (type: AnimationType) => void;
-    setShowInitialReveal: (show: boolean) => void;
-    startGame: () => void;
-}
-
-export const GameOptions: React.FC<OptionsProps> = ({
+export const GameOptions: React.FC<GameOptionsProps> = ({
                                                             gameMode,
                                                             tileCount,
                                                             useFlipAnimation,
@@ -26,6 +15,7 @@ export const GameOptions: React.FC<OptionsProps> = ({
                                                             setShowInitialReveal,
                                                             startGame
                                                         }) => {
+
     return (
         <div className="game-options">
             <div>
