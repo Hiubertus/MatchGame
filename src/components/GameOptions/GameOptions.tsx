@@ -3,7 +3,6 @@ import { TileCount } from "../../lib/store/GameStore";
 import "./GameOptions.scss"
 import {GameOptionsProps} from "../Game";
 
-
 export const GameOptions: React.FC<GameOptionsProps> = ({
                                                             gameMode,
                                                             tileCount,
@@ -15,7 +14,6 @@ export const GameOptions: React.FC<GameOptionsProps> = ({
                                                             setShowInitialReveal,
                                                             startGame
                                                         }) => {
-
     return (
         <div className="game-options">
             <div>
@@ -23,16 +21,16 @@ export const GameOptions: React.FC<GameOptionsProps> = ({
                     onClick={() => setGameMode('pair')}
                     className={gameMode === 'pair' ? 'active' : ''}
                 >
-                    Match Pairs
+                    Pairs
                 </button>
                 <button
                     onClick={() => setGameMode('triplet')}
                     className={gameMode === 'triplet' ? 'active' : ''}
                 >
-                    Match Triplets
+                    Triplets
                 </button>
             </div>
-            <div>
+            <div className="tile-count-buttons">
                 {[12, 18, 24, 30, 36].map(count => (
                     <button
                         key={count}
@@ -48,13 +46,13 @@ export const GameOptions: React.FC<GameOptionsProps> = ({
                     onClick={() => setAnimationType('flip')}
                     className={useFlipAnimation ? 'active' : ''}
                 >
-                    Flip Animation
+                    Flip
                 </button>
                 <button
                     onClick={() => setAnimationType('fade')}
                     className={!useFlipAnimation ? 'active' : ''}
                 >
-                    Fade Animation
+                    Fade
                 </button>
             </div>
             <div>
@@ -62,13 +60,13 @@ export const GameOptions: React.FC<GameOptionsProps> = ({
                     onClick={() => setShowInitialReveal(true)}
                     className={showInitialReveal ? 'active' : ''}
                 >
-                    Show tiles initially
+                    Show Initial
                 </button>
                 <button
                     onClick={() => setShowInitialReveal(false)}
                     className={!showInitialReveal ? 'active' : ''}
                 >
-                    Start with hidden tiles
+                    Hide Initial
                 </button>
             </div>
             <button onClick={startGame} className="start-game-button">
