@@ -1,3 +1,67 @@
+
+.game-board {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.game-controls {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.end-game-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #d32f2f;
+  }
+}
+
+.game-stats {
+  display: flex;
+  gap: 20px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #f0f0f0;
+  padding: 10px;
+  border-radius: 4px;
+  min-width: 80px;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+}
+
+
+
+
 .memory-game {
   display: grid;
   gap: 0.5rem;

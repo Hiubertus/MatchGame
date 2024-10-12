@@ -1,9 +1,10 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import { GameOptions } from '../GameOptions';
 import { Board } from '../Board';
 import './Game.scss';
 import { useGameStore } from "../../lib/store/GameStore";
 import { GameMode, TileCount, AnimationType } from "../../lib/store/GameStore";
+// import {GameHistory} from "../GameHistory";
 
 export interface GameOptionsProps {
     gameMode: GameMode;
@@ -28,6 +29,11 @@ export interface BoardProps {
     useFlipAnimation: boolean;
     handleTileClick: (index: number) => void;
     endGame: () => void;
+    currentGameStats: {
+        timeSpent: number;
+        flippedTiles: number;
+        successfulMatches: number;
+    };
 }
 
 export const Game: React.FC = () => {
@@ -45,7 +51,7 @@ export const Game: React.FC = () => {
         tiles,
         handleTileClick,
         endGame,
-        initializeGame
+        currentGameStats,
     } = useGameStore();
 
     const gameOptionsProps: GameOptionsProps = {
@@ -58,7 +64,6 @@ export const Game: React.FC = () => {
         setAnimationType,
         setShowInitialReveal,
         startGame,
-
     };
 
     const boardProps: BoardProps = {
@@ -66,26 +71,17 @@ export const Game: React.FC = () => {
         tileCount,
         useFlipAnimation,
         handleTileClick,
-        endGame
+        endGame,
+        currentGameStats,
     };
-
-    useEffect(() => {
-        // Sprawdź, czy istnieje zapisany stan gry
-        const savedState = localStorage.getItem('game-storage');
-        if (savedState) {
-            const parsedState = JSON.parse(savedState);
-            if (parsedState.state.isGameStarted) {
-                // Jeśli gra była rozpoczęta, zainicjalizuj ją ponownie
-                initializeGame();
-            }
-            // W przeciwnym razie, stan opcji gry zostanie automatycznie załadowany przez Zustand
-        }
-    }, [initializeGame]);
 
     return (
         <div className="game-container">
             {!isGameStarted ? (
-                <GameOptions {...gameOptionsProps} />
+                <>
+                    <GameOptions {...gameOptionsProps} />
+                    {/*<GameHistory/>*/}
+                </>
             ) : (
                 <Board {...boardProps} />
             )}

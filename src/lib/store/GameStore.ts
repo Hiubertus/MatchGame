@@ -1,6 +1,5 @@
 import {create, StateCreator} from 'zustand';
-import {persist, PersistOptions, PersistStorage, StateStorage, StorageValue} from 'zustand/middleware';
-import {customStorage} from "../storage/customStorage.ts";
+import {createJSONStorage, persist, PersistOptions} from 'zustand/middleware';
 
 const colors = [
     'red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'cyan',
@@ -20,17 +19,42 @@ interface Tile {
     isMatched: boolean;
 }
 
+interface GameStatistics {
+    timeSpent: number;
+    flippedTiles: number;
+    successfulMatches: number;
+}
+
+interface GameHistory {
+    tileCount: TileCount;
+    animationType: AnimationType;
+    gameMode: GameMode;
+    initiallyHidden: boolean;
+    matchesMade: number;
+    timeSpent: number;
+    totalFlips: number;
+    date: string;
+}
+
 interface GameState {
     gameMode: GameMode;
     tileCount: TileCount;
     useFlipAnimation: boolean;
     showInitialReveal: boolean;
     isGameStarted: boolean;
+    gameCompleted: boolean;
 
     tiles: Tile[];
     revealedIndices: number[];
     isCheckingMatch: boolean;
     initialRevealDone: boolean;
+
+    currentGameStats: GameStatistics;
+    gameHistory: GameHistory[];
+
+    startTime: number | null;
+    timerInterval: NodeJS.Timeout | null;
+    updateTimer: () => void;
 
     setGameMode: (mode: GameMode) => void;
     setTileCount: (count: TileCount) => void;
@@ -40,34 +64,13 @@ interface GameState {
 
     initializeGame: () => void;
     handleTileClick: (index: number) => void;
-    endGame: () => void;
+    endGame: (forceEnd?: boolean) => void;
+
+    checkGameCompletion: () => void;
+    updateCurrentGameStats: (stats: Partial<GameStatistics>) => void;
+    addGameToHistory: () => void;
+    getFilteredGameHistory: (filters: Partial<GameHistory>) => GameHistory[];
 }
-
-const createJSONStorage = (storage: StateStorage): PersistStorage<GameState> => ({
-    getItem: (name) => {
-        const value = storage.getItem(name);
-        return value ? (JSON.parse(value) as StorageValue<GameState>) : null;
-    },
-    setItem: (name, value) => {
-        storage.setItem(name, JSON.stringify(value));
-    },
-    removeItem: (name) => {
-        storage.removeItem(name);
-    },
-});
-
-const gameStorage = createJSONStorage({
-    getItem: (): string | null => {
-        const value = customStorage.getItem();
-        return value ? value : null;
-    },
-    setItem: (value): void => {
-        customStorage.setItem(value);
-    },
-    removeItem: (): void => {
-        customStorage.removeItem();
-    },
-});
 
 type GamePersist = (
     config: StateCreator<GameState>,
@@ -85,22 +88,85 @@ export const useGameStore = create((persist as GamePersist)((set, get) => ({
         isCheckingMatch: false,
         initialRevealDone: false,
 
+        currentGameStats: {
+            timeSpent: 0,
+            flippedTiles: 0,
+            successfulMatches: 0
+        },
+        gameHistory: [],
+        startTime: null,
+        timerInterval: null,
+        gameCompleted: false,
+
         setGameMode: (mode) => set({gameMode: mode}),
         setTileCount: (count) => set({tileCount: count}),
         setAnimationType: (type) => set({useFlipAnimation: type === 'flip'}),
         setShowInitialReveal: (show) => set({showInitialReveal: show}),
-        endGame: () => {
-            set({
-                isGameStarted: false,
-                tiles: [],
-                revealedIndices: [],
-                isCheckingMatch: false,
-                initialRevealDone: false,
-            });
-        },
+
         startGame: () => {
-            set({isGameStarted: true});
+            const {showInitialReveal} = get();
+            set({
+                isGameStarted: true,
+                gameCompleted: false,
+                currentGameStats: {
+                    timeSpent: 0,
+                    flippedTiles: 0,
+                    successfulMatches: 0
+                }
+            });
             get().initializeGame();
+
+            if (showInitialReveal) {
+                setTimeout(() => {
+                    set({ startTime: Date.now() });
+                    const interval = setInterval(get().updateTimer, 1000);
+                    set({ timerInterval: interval });
+                }, 3000);
+            } else {
+                set({ startTime: Date.now() });
+                const interval = setInterval(get().updateTimer, 1000);
+                set({ timerInterval: interval });
+            }
+        },
+
+        endGame: (forceEnd = false) => {
+            const state = get();
+            if (state.isGameStarted && (state.gameCompleted || forceEnd)) {
+                if (state.currentGameStats.flippedTiles > 0) {
+                    state.addGameToHistory();
+                }
+                if (state.timerInterval) {
+                    clearInterval(state.timerInterval);
+                }
+                set({
+                    isGameStarted: false,
+                    gameCompleted: false,
+                    tiles: [],
+                    revealedIndices: [],
+                    isCheckingMatch: false,
+                    initialRevealDone: false,
+                    currentGameStats: {
+                        timeSpent: 0,
+                        flippedTiles: 0,
+                        successfulMatches: 0
+                    },
+                    startTime: null,
+                    timerInterval: null
+                });
+            }
+        },
+        updateTimer: () => {
+            const {startTime} = get();
+            if (startTime) {
+                const currentTime = Date.now();
+                const timeSpent = Math.floor((currentTime - startTime) / 1000);
+                set(state => ({
+                    currentGameStats: {
+                        ...state.currentGameStats,
+                        timeSpent
+                    }
+                }));
+            }
         },
 
         initializeGame: () => {
@@ -144,6 +210,8 @@ export const useGameStore = create((persist as GamePersist)((set, get) => ({
             const newTiles = [...tiles];
             newTiles[index].isRevealed = true;
 
+            get().updateCurrentGameStats({ flippedTiles: get().currentGameStats.flippedTiles + 1 });
+
             set({revealedIndices: newRevealedIndices, tiles: newTiles});
 
             if (newRevealedIndices.length === (gameMode === 'pair' ? 2 : 3)) {
@@ -158,6 +226,9 @@ export const useGameStore = create((persist as GamePersist)((set, get) => ({
                                 newRevealedIndices.includes(i) ? {...tile, isMatched: true} : tile
                             )
                         }));
+                        // Update successful matches count
+                        get().updateCurrentGameStats({ successfulMatches: get().currentGameStats.successfulMatches + 1 });
+                        get().checkGameCompletion();
                     } else {
                         set((state) => ({
                             tiles: state.tiles.map((tile, i) =>
@@ -170,9 +241,56 @@ export const useGameStore = create((persist as GamePersist)((set, get) => ({
                 }, 1000);
             }
         },
+
+        checkGameCompletion: () => {
+            const timer = get().timerInterval;
+            const {tiles} = get();
+            const allMatched = tiles.every(tile => tile.isMatched);
+            if (allMatched) {
+                set({gameCompleted: true});
+                if (timer) {
+                    clearInterval(timer);
+                }
+            }
+        },
+
+        updateCurrentGameStats: (stats: Partial<GameStatistics>) => {
+            set((state) => ({
+                currentGameStats: {...state.currentGameStats, ...stats}
+            }));
+        },
+
+        addGameToHistory: () => {
+            const state = get();
+            const endTime = Date.now();
+            const timeSpent = state.startTime ? Math.floor((endTime - state.startTime) / 1000) : 0;
+
+            const gameRecord: GameHistory = {
+                tileCount: state.tileCount,
+                animationType: state.useFlipAnimation ? 'flip' : 'fade',
+                gameMode: state.gameMode,
+                initiallyHidden: !state.showInitialReveal,
+                matchesMade: state.currentGameStats.successfulMatches,
+                timeSpent: timeSpent,
+                totalFlips: state.currentGameStats.flippedTiles,
+                date: new Date().toISOString()
+            };
+
+            set((state) => ({
+                gameHistory: [...state.gameHistory, gameRecord]
+            }));
+        },
+
+        getFilteredGameHistory: (filters: Partial<GameHistory>) => {
+            const state = get();
+            return state.gameHistory.filter(game =>
+                Object.entries(filters).every(([key, value]) =>
+                    game[key as keyof GameHistory] === value
+                )
+            );
+        }
     }),
     {
         name: 'game-storage',
-        storage: gameStorage,
-    })
-);
+        storage: createJSONStorage(() => localStorage),
+    }));
